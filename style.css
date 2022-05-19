@@ -11,6 +11,32 @@ body {
   filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#1a315f', endColorstr='#1a315f', GradientType=0);
 }
 
+.jumbotron {
+  padding: 30px;
+  margin-bottom: 30px;
+  font-size: 21px;
+  font-weight: 200;
+  line-height: 2.1428571435;
+  border: 1px solid #000000;
+  color: #ffffff;
+  background-color: #242424;
+}
+
+.thumbnail {
+  padding: 5px;
+  background-color: #242424;
+  display: inline-block;
+  border: 1px solid #000000;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.thumbnail .caption {
+  padding: 9px;
+  color: #ededed;
+}
+
 .body-wrap {
   min-height: 700px;
 }
