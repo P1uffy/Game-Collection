@@ -1,0 +1,1 @@
+livescriptforjs.service = livescriptforjs.service || {};

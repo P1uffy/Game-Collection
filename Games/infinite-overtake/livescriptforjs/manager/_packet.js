@@ -1,0 +1,1 @@
+livescriptforjs.manager = livescriptforjs.manager || {};

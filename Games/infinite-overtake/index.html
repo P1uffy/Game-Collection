@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Infinite Overtake</title>
+
+	<style>
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; -webkit-touch-callout: none; overflow: hidden;}
+        canvas { margin: 0; padding: 0; width: 100%; height: 100%; }
+    </style>
+
+    <link rel="stylesheet" href="lib/w3.css">
+    <link rel="stylesheet" href="ui.css">
+    
+</head>
+
+<body>
+
+<div style="margin: 0; padding: 0; width: 100%; height: 100%; font-size: 0;">
+	<canvas id="pCanvas"></canvas>
+</div>
+<div id="pFpsDiv" style="visibility: hidden; position: absolute; z-index: 1; padding: 4px 80px; left: 0px; top: 0px; width: 100%; height: 0px;">
+	<label id="pFpsLabel" style="color: black; font: bold 24px lucida console; line-height: 0.0;"></label>
+</div>
+    
+<div id="pMainDiv" onclick="canvasClicked(event)" style="margin: 0px; padding: 0px; left: 0px; top: 0px; width: 100%; height: 100%; position: absolute; z-index: 1;
+    -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none; -o-user-select:none;">
+
+    <div id="pLoadingDiv" style="visibility: visible; opacity: 1.0; position: absolute; z-index: 10; left: 0px; top: 0px; width: 100%; height: 100%; background-color: #DD2200;">
+        <label style="position: absolute; text-align: center; width: 100%; height: 0px; left: 0%; top: 30%; font-size: 60px;">Infinite Overtake</label>
+	    <label style="position: absolute; text-align: center; width: 100%; height: 0px; left: 0%; top: 50%; font-size: 20px;">Loading...</label>
+    </div>
+   
+    <div style="position: absolute; width: 19%; top: 83%; left: 0%; z-index: 2;">
+        <button class="StandardButton" id="pManageButton" style="width: 100%; height: 24px; line-height: 12px; background-color: rgb(37, 91, 138); color: white;" onclick="toggleMenuVisible()">Menu (Press Space)</button>
+        <label class="StandardLabel" id="pInfoLabel1" style="text-align: left; padding: 0px 4px; width: 100%; height: 20px; line-height: 18px; " onclick="toggleMenuVisible()">3 Overtakes</label>
+        <label class="StandardLabel" id="pInfoLabel2" style="text-align: left; padding: 0px 4px; width: 100%; height: 20px; line-height: 18px; transform:translateY(-2px);" onclick="toggleMenuVisible()">100 Points</label>
+        <label class="StandardLabel" id="pInfoLabel3" style="text-align: left; padding: 0px 4px; width: 100%; height: 20px; line-height: 18px; transform:translateY(-4px);" onclick="toggleMenuVisible()">200 For Bonus</label>
+    </div>
+
+    <div style="position: absolute; width: 10%; top: 84%; right: 0%; z-index: 2;">
+        <div class="StandardSelect" style="width: 100%; text-align: left;">
+            <select id="pGearModeSelect">
+                <option value="0">Auto</option>
+                <option value="0">Auto</option>
+                <option value="1">Manual</option>
+                <option value="2">CVT</option>
+            </select>
+        </div>
+        <div class="StandardSelect" style="width: 100%; text-align: left; transform:translateY(-4px);">
+            <select id="pDrivingStyleSelect">
+                <option value="2">Sport</option>
+                <option value="0">Eco</option>
+                <option value="1">Trip</option>
+                <option value="2">Sport</option>
+                <option value="3">Race</option>
+            </select>
+        </div>
+        <div class="StandardSelect" style="width: 100%; text-align: left; transform:translateY(-8px);">
+            <select id="pCameraSelect">
+                <option value="0">Cockpit</option>
+                <option value="0">Cockpit</option>
+                <option value="1">Karting</option>
+                <option value="2">Back</option>
+                <option value="3">Chase</option>
+                <option value="4">Top</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="pMenuDiv" style="margin: 0px; padding: 0px; left: 5%; top: 2%; width: 90%; height: 96%; position: absolute; z-index: 1; visibility: hidden; background: transparent; overflow: visible;">
+        <table id="t01" style="width: 100%; transform: translate(0px, 0px);">
+	    <tr><th class="tc1">Results:</th><th class="tc2">Current Segment</th><th class="tc3">Best Segment</th><th class="tc4">Sum of Segments</th></tr>
+		<tr><td>Points + Bonus</td><td id="pPointsLabel1"></td><td id="pPointsLabel2"></td><td id="pPointsLabel3"></td></tr>
+		<tr><td>Overtakes</td><td id="pOvertakesLabel1"></td><td id="pOvertakesLabel2"></td><td id="pOvertakesLabel3"></td></tr>
+		<tr><td>Major Crashes</td><td id="pMajorCrashesLabel1"></td><td id="pMajorCrashesLabel2"></td><td id="pMajorCrashesLabel3"></td></tr>
+		<tr><td>Minor Crashes</td><td id="pMinorCrashesLabel1"></td><td id="pMinorCrashesLabel2"></td><td id="pMinorCrashesLabel3"></td></tr>
+		<tr><td>Average & Top Speed</td><td id="pSpeedLabel1"></td><td id="pSpeedLabel2"></td><td id="pSpeedLabel3"></td></tr>
+		<tr><td>Time & Range</td><td id="pTimeAndLengthLabel1"></td><td id="pTimeAndLengthLabel2"></td><td id="pTimeAndLengthLabel3"></td></tr>
+		<tr><td>Fuel/100km & Points/min</td><td id="pOtherLabel1"></td><td id="pOtherLabel2"></td><td id="pOtherLabel3"></td></tr>
+	    </table>
+        <br />
+        <label class="StandardLabel" style="width: 20%; margin-right: -2%;">Difficulty:</label>
+        <div class="StandardSelect" style="width: 20%;">
+            <select id="pGameModeSelect">
+                <option value="0">Adaptive</option>
+                <option value="0">Adaptive</option>
+                <option value="1">Easy</option>
+                <option value="2">Fair</option>
+                <option value="3">Hard</option>
+                <option value="4">Random</option>
+                <option value="5">Custom</option>
+            </select>
+        </div>
+        <button class="StandardButton" id="pContinueGameButton" style="width: 35.5%; text-align: left; padding: 0px 30px; background-color: #255b8a; color: white;" onclick="continueGame()">Continue Driving (Press Space)</button>
+        <button class="StandardButton" id="pRestartGameButton" style="width: 24.5%; float: right; margin-right: 2px;" onclick="resetGame()">Reset All Results</button>
+        <br />
+        <br />
+        <label class="StandardLabel" style="width: 20%; margin-right: -2%;">Coastside:</label>
+        <div class="StandardSelect" style="width: 20%;">
+            <select id="pCoastSelect">
+                <option value="0">On the Left</option>
+                <option value="0">On the Left</option>
+                <option value="1">On the Right</option>
+                <option value="2">On Both Sides!</option>
+                <option value="3">None (Canyon)</option>
+            </select>
+        </div>
+        <label class="StandardLabel" style="width: 18%; margin-right: -2%;">Road Curvature:</label>
+        <div class="StandardSelect" style="width: 13.4%;">
+            <select id="pRoadCurvatureSelect">
+                <option value="1">25%</option>
+                <option value="0">10%</option>
+                <option value="1">25%</option>
+                <option value="2">50%</option>
+                <option value="3">75%</option>
+                <option value="4">100%</option>
+                <option value="5">Extreme</option>
+            </select>
+        </div>
+        <label class="StandardLabel" style="width: 18%; margin-right: -2%;">Traffic Density:</label>
+        <div class="StandardSelect" style="width: 13.4%;">
+            <select id="pTrafficDensitySelect">
+                <option value="2">50%</option>
+                <option value="0">0%</option>
+                <option value="1">25%</option>
+                <option value="2">50%</option>
+                <option value="3">75%</option>
+                <option value="4">100%</option>
+            </select>
+        </div>
+        <label class="StandardLabel" style="width: 20%; margin-right: -2%;">Indent Structure:</label>
+        <div class="StandardSelect" style="width: 20%;">
+            <select id="pRoadIndentSelect">
+                <option value="1">Mild</option>
+                <option value="0">None</option>
+                <option value="1">Mild</option>
+                <option value="2">Wavy</option>
+                <option value="3">Deep</option>
+            </select>
+        </div>
+        <label class="StandardLabel" style="width: 18%; margin-right: -2%;">Road Slope:</label>
+        <div class="StandardSelect" style="width: 13.4%;">
+            <select id="pRoadSlopeSelect">
+                <option value="1">Gentle</option>
+                <option value="0">Flat</option>
+                <option value="1">Gentle</option>
+                <option value="2">Strong</option>
+                <option value="3">Steep</option>
+            </select>
+        </div>
+        <label class="StandardLabel" style="width: 18%; margin-right: -2%;">Traffic Speed:</label>
+        <div class="StandardSelect" style="width: 13.4%;">
+            <select id="pTrafficSpeedSelect">
+                <option value="0">Slow</option>
+                <option value="0">Slow</option>
+                <option value="1">Normal</option>
+                <option value="2">Fast</option>
+                <option value="3">Faster</option>
+            </select>
+        </div>
+        <br />
+        <br />
+        <div style="width: 60%; margin-left: 24%;">
+            <button class="StandardButton" style="width: 49%; background-color: #9d0540;" onclick="toggleFullScreen()">Full Screen</button>
+            <label class="StandardLabel" style="width: 25%; margin-right: -2%; background-color: #9d0540;">Engine:</label>
+            <div class="StandardSelect" style="width: 25%;">
+                <select id="pEngineSelect">
+                    <option value="1">160hp</option>
+                    <option value="0">130hp</option>
+                    <option value="1">160hp</option>
+                    <option value="2">250hp</option>
+                </select>
+            </div>
+            <br />
+            <label class="StandardLabel" style="width: 25%; margin-right: -2%; background-color: #9d0540;">Resolution:</label>
+            <div class="StandardSelect" style="width: 25%;">
+                <select id="pResolutionSelect">
+                    <option value="4">70%</option>
+                    <option value="0">30%</option>
+                    <option value="1">40%</option>
+                    <option value="2">50%</option>
+                    <option value="3">60%</option>
+                    <option value="4">70%</option>
+                    <option value="5">80%</option>
+                    <option value="6">90%</option>
+                    <option value="7">100%</option>
+                </select>
+            </div>
+            <label class="StandardLabel" style="width: 25%; margin-right: -2%; background-color: #9d0540;">Tires:</label>
+            <div class="StandardSelect" style="width: 25%;">
+                <select id="pTireSoftnessSelect">
+                    <option value="1">Medium</option>
+                    <option value="0">Stiff</option>
+                    <option value="1">Medium</option>
+                    <option value="2">Soft</option>
+                    <option value="3">Rally</option>
+                    <option value="4">Drift</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var x, i, j, selElmnt, a, b, c;
+    /*look for any elements with the class "StandardSelect":*/
+    x = document.getElementsByClassName("StandardSelect");
+    for (i = 0; i < x.length; i++)
+    {
+        selElmnt = x[i].getElementsByTagName("select")[0];
+        /*for each element, create a new DIV that will act as the selected item:*/
+        a = document.createElement("DIV");
+        a.setAttribute("class", "select-selected");
+        a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+        x[i].appendChild(a);
+        /*for each element, create a new DIV that will contain the option list:*/
+        b = document.createElement("DIV");
+        b.setAttribute("class", "select-items select-hide");
+        for (j = 1; j < selElmnt.length; j++)
+        {
+            /*for each option in the original select element,
+            create a new DIV that will act as an option item:*/
+            c = document.createElement("DIV");
+            c.innerHTML = selElmnt.options[j].innerHTML;
+            c.addEventListener("click", function(e)
+            {
+                /*when an item is clicked, update the original select box,
+                and the selected item:*/
+                var y, i, k, s, h;
+                s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+                h = this.parentNode.previousSibling;
+                for (i = 0; i < s.length; i++)
+                {
+                    if (s.options[i].innerHTML == this.innerHTML)
+                    {
+                        s.selectedIndex = i;
+                        h.innerHTML = this.innerHTML;
+                        y = this.parentNode.getElementsByClassName("same-as-selected");
+                        for (k = 0; k < y.length; k++)
+                        {
+                            y[k].removeAttribute("class");
+                        }
+                        this.setAttribute("class", "same-as-selected");
+                        break;
+                    }
+                }
+                h.click();
+            });
+            b.appendChild(c);
+        }
+        x[i].appendChild(b);
+        a.addEventListener("click", function(e)
+        {
+            /*when the select box is clicked, close any other select boxes,
+            and open/close the current select box:*/
+            e.stopPropagation();
+            closeAllSelect(this);
+            var selected = this.nextSibling.classList.toggle("select-hide");
+            this.classList.toggle("select-arrow-active");
+
+            var pSelect = e.srcElement.parentElement.children[0];
+            if (pSelect != null)
+            {
+                var pSelectListeners = pSelect.pSelectListeners;
+                if (pSelectListeners != null)
+                {
+                    for (var selectListenerIndex = 0; selectListenerIndex < pSelectListeners.length; ++selectListenerIndex)
+                    {
+                        pSelectListeners[selectListenerIndex].selectNotify(pSelect, selected);
+                    }
+                }
+            }
+        });
+    }
+    function closeAllSelect(elmnt)
+    {
+        /*a function that will close all select boxes in the document,
+        except the current select box:*/
+        var x, y, i, arrNo = [];
+        x = document.getElementsByClassName("select-items");
+        y = document.getElementsByClassName("select-selected");
+        for (i = 0; i < y.length; i++)
+        {
+            if (elmnt == y[i])
+            {
+                arrNo.push(i)
+            } else
+            {
+                y[i].classList.remove("select-arrow-active");
+            }
+        }
+        for (i = 0; i < x.length; i++)
+        {
+            if (arrNo.indexOf(i))
+            {
+                x[i].classList.add("select-hide");
+            }
+        }
+    }
+    /*if the user clicks anywhere outside the select box,
+    then close all select boxes:*/
+    document.addEventListener("click", closeAllSelect);
+</script>
+
+<script src="F_2_JSO_246579c0ae08fffd59441e1521ae23b533f7fcd50c0fffd06003b.js"></script>
+
+<script>
+        var pMainDiv = document.getElementById("pMainDiv");
+        updateMainDiv();
+
+        var pLoadingDiv = document.getElementById("pLoadingDiv");
+        if (Configuration.debugMode)
+        {
+            pLoadingDiv.style.visibility = "hidden";
+        }
+
+        function updateMainDiv()
+        {
+            var w = window.innerWidth;
+            var h = window.innerHeight;
+            var scaleX = w * 0.001;
+            var scaleY = h * 0.002;
+            pMainDiv.style.transform = "scale(" + scaleX + ", " + scaleY + ")";
+            pMainDiv.style.width = (100.0 / scaleX) + "%";
+            pMainDiv.style.height = (100.0 / scaleY) + "%";
+            pMainDiv.style.left = w * (1.0 - 1.0 / scaleX) * 0.5 + "px";
+            pMainDiv.style.top = (h * (1.0 - 1.0 / scaleY) * 0.5) + "px";
+        };
+</script>
+
+<script src="livescriptforjs/_packet.js"></script>
+<script ></script>
+<script ></script>
+<script ></script>
+<script src="livescriptforjs/manager/_packet.js"></script>
+<script ></script>
+<script ></script>
+<script ></script>
+<script ></script>
+<script src="livescriptforjs/manager/ViewList.js"></script>
+
+<script src="livescriptforjs/service/_packet.js"></script>
+<script ></script>
+<script src="livescriptforjs/service/DummyService.js"></script>
+<script src="livescriptforjs/service/View.js"></script>
+<script src="livescriptforjs/service/MainView.js"></script>
+
+<script src="lib/babylon.js"></script>
+<script src="lib/hammer.min.js"></script>
+<script src="lib/jquery.min.js"></script>
+
+<script>
+    var pLiveScriptService = new livescriptforjs.service.DummyService();
+    pLiveScriptService.addClass(BABYLON.Vector3, "BABYLON.Vector3");
+    if (!Configuration.debugMode && pLiveScriptService.pLiveScriptServiceDiv != null)
+    {
+        pLiveScriptService.pLiveScriptServiceDiv.style.visibility = "hidden";
+    }
+</script>
+
+<script ></script>
+<script src="F_34_JSO_a3ba6449cab1c5201c.js"></script>
+<script src="F_17_JSO_2020be7869b1d32ffd787ea718fd79f7375c20301f5e7a32d8f6.js"></script>
+<script src="F_18_JSO_2020be7869b1d32ffd6f7017de4ef4ccdaae250ac17d681eeddf.js"></script>
+<script src="F_13_JSO_08bc0f7bddb22eced94e201e7be147cd62.js"></script>
+
+<script src="F_31_JSO_6b6874a57a1a36cc5c20301f5e7a32d8f6.js"></script>
+<script src="F_33_JSO_e9dbc348e92b48752720ac2920ac20192014ab201a.js"></script>
+<script src="F_32_JSO_a3fabb201e5cd05f2022fbdd05152b138201ebc.js"></script>
+
+<script src="F_4_JSO_272e041dcf751614e2720ac2920ac20192014ab201a.js"></script>
+<script src="F_10_JSO_20206dcd20141a54f1c46e67a315c0d01167.js"></script>
+<script src="F_3_JSO_1eddb447201dfffd20c6.js"></script>
+<script src="F_5_JSO_1a71203aa8cdc7d85116119cab341125540.js"></script>
+<script src="F_14_JSO_2026fa537eabd9d8fa.js"></script>
+<script src="F_15_JSO_230fd1cdc7201ccd160e154d515b9fffdf464.js"></script>
+<script src="F_16_JSO_0c1728597feecb412720ac2920ac20192014ab201a.js"></script>
+<script src="F_19_JSO_69fffd7604d4b4a1d77fcd50c0fffd06003b.js"></script>
+<script src="F_11_JSO_1c331c47124fd220307fcd50c0fffd06003b.js"></script>
+<script src="F_12_JSO_064f152153ee24e026ffbbec2018daf917e53.js"></script>
+<script src="F_29_JSO_7b77b0221a19bbfd16119cab341125540.js"></script>
+<script src="F_35_JSO_47fffd073ce323b220302720ac2920ac20192014ab201a.js"></script>
+<script src="F_36_JSO_6c002019de20ac7c17d20305f5bb0d62a4e461a.js"></script>
+<script src="F_24_JSO_01e4e9201a4cf24ed03b2fc5562c652d711.js"></script>
+<script src="F_8_JSO_7e7e7daf7acc202038e169dfbd1bbc177a.js"></script>
+<script src="F_9_JSO_7e7e7daf7acc202038eb34a9160de5518262720ac2920ac20192014ab201a.js"></script>
+<script src="F_21_JSO_c4a8fdc53a52ef1b.js"></script>
+<script src="F_23_JSO_1e711614408d5161bb16119cab341125540.js"></script>
+<script src="F_22_JSO_4cd52e0430e77f4916119cab341125540.js"></script>
+<script src="F_27_JSO_a6cfadf2756ee968ff5157d83ab904a917e160b6fffd6e201cfca2.js"></script>
+<script src="F_28_JSO_a6cfadf2756ee968ec0d1dbc3a006da5092026a64ee6092fa9.js"></script>
+<script src="F_26_JSO_7da621222c20141dd82ed43f0e60f6564cfffd.js"></script>
+<script src="F_25_JSO_152152274707a628df0c4efcd6bb374308.js"></script>
+<script src="F_1_JSO_a9b01349425c266a03fffdf77e005f5ac8.js"></script>
+
+<script>
+    var _25047_JSO_4c17e8ea0e0afffd437fcd50c0fffd06003b = new _25047_JSO_0e3f5badcdffd6fffd();
+    pLiveScriptService.addListener(_25047_JSO_4c17e8ea0e0afffd437fcd50c0fffd06003b);
+    _25047_JSO_4c17e8ea0e0afffd437fcd50c0fffd06003b.start();
+
+    function toggleFullScreen()
+    {
+        if (_25047_JSO_4c17e8ea0e0afffd437fcd50c0fffd06003b._25047_JSO_caa95c2417115f4e.isFullscreen)
+        {
+            closeFullscreen();
+        }
+        else
+        {
+            openFullscreen();
+        }
+    };
+
+    var pDocumentElement = document.documentElement;
+    function openFullscreen()
+    {
+        if (pDocumentElement.requestFullscreen)
+        {
+            pDocumentElement.requestFullscreen();
+        }
+        else if (pDocumentElement.mozRequestFullScreen)
+        {
+            pDocumentElement.mozRequestFullScreen();
+        }
+        else if (pDocumentElement.webkitRequestFullscreen)
+        {
+            pDocumentElement.webkitRequestFullscreen();
+        }
+        else if (pDocumentElement.msRequestFullscreen)
+        {
+            pDocumentElement.msRequestFullscreen();
+        }
+    };
+    function closeFullscreen()
+    {
+        if (document.exitFullscreen)
+        {
+            document.exitFullscreen();
+        }
+        else if (document.mozCancelFullScreen)
+        {
+            document.mozCancelFullScreen();
+        }
+        else if (document.webkitExitFullscreen)
+        {
+            document.webkitExitFullscreen();
+        }
+        else if (document.msExitFullscreen)
+        {
+            document.msExitFullscreen();
+        }
+    };
+
+    function canvasClicked(event)
+    {
+    };
+
+    function toggleMenuVisible()
+    {
+        _25047_JSO_4c17e8ea0e0afffd437fcd50c0fffd06003b._25047_JSO_3e661332c02fe5cd201c0463adb46320182018.toggleMenuVisible();
+    };
+
+    function setMenuVisibleTrue()
+    {
+        _25047_JSO_4c17e8ea0e0afffd437fcd50c0fffd06003b._25047_JSO_3e661332c02fe5cd201c0463adb46320182018.setMenuVisible(true);
+    };
+
+    function continueGame()
+    {
+        _25047_JSO_4c17e8ea0e0afffd437fcd50c0fffd06003b._25047_JSO_3e661332c02fe5cd201c0463adb46320182018.continueGame();
+    };
+
+    function resetGame()
+    {
+        _25047_JSO_4c17e8ea0e0afffd437fcd50c0fffd06003b._25047_JSO_3e661332c02fe5cd201c0463adb46320182018.resetGame();
+    };
+
+</script>
+
+
+</body>
+
+</html>
